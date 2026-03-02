@@ -529,7 +529,7 @@ export default function ProductDetailNuevo() {
                                         </ul>
                                     </div>
                                 ) : (
-                                    <p className="text-gray-500">Sin sabores especificados.</p>
+                                    <p className="text-gray-500">Sin información adicional.</p>
                                 )}
                             </div>
                         )}

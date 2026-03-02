@@ -11,15 +11,6 @@ const CATEGORIES = [
     { id: 5, name: "Body splash victoria secret", slug: "body-splash-victoria-secret" },
 ];
 
-// normalizador simple (lowercase + sin tildes + colapsa espacios)
-const norm = (s = "") =>
-    String(s)
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .toLowerCase()
-        .trim()
-        .replace(/\s+/g, " ");
-
 export default function SidebarFiltersNuevo({
     currentCategorySlug,
     onSelectCategory,
@@ -38,20 +29,13 @@ export default function SidebarFiltersNuevo({
     onToggleBrand = () => { },
     onClearBrands = () => { },
 
-    // Puffs
-    puffsOptions = [], // [{ value, label, count }]
-    selectedPuffs = [],
-    onTogglePuffs = () => { },
-    onClearPuffs = () => { },
-
-    // Sabores
-    flavorOptions = [], // [{ value, label, count }]
-    selectedFlavors = [],
-    onToggleFlavor = () => { },
-    onClearFlavors = () => { },
+    // Mililitros
+    mlOptions = [], // [{ value, label, count }]
+    selectedMls = [],
+    onToggleMl = () => { },
+    onClearMls = () => { },
 }) {
     const [open, setOpen] = useState(false);
-    const [flavorSearch, setFlavorSearch] = useState("");
     const [draftPrice, setDraftPrice] = useState(null); // {min,max} mientras el usuario ajusta
 
     const navigate = useNavigate();
@@ -100,23 +84,9 @@ export default function SidebarFiltersNuevo({
         return (
             isPriceActive ||
             (Array.isArray(selectedBrands) && selectedBrands.length > 0) ||
-            (Array.isArray(selectedPuffs) && selectedPuffs.length > 0) ||
-            (Array.isArray(selectedFlavors) && selectedFlavors.length > 0)
+            (Array.isArray(selectedMls) && selectedMls.length > 0)
         );
-    }, [price, priceMin, priceMax, selectedBrands, selectedPuffs, selectedFlavors]);
-
-
-    // Filtrado local de la lista de sabores según el buscador
-    const filteredFlavorOptions = useMemo(() => {
-        const list = Array.isArray(flavorOptions) ? flavorOptions : [];
-        const q = norm(flavorSearch);
-        if (!q) return list;
-        const tokens = q.split(" ").filter(Boolean);
-        return list.filter(({ value, label }) => {
-            const haystack = norm(label || value);
-            return tokens.every((t) => haystack.includes(t));
-        });
-    }, [flavorOptions, flavorSearch]);
+    }, [price, priceMin, priceMax, selectedBrands, selectedMls]);
 
     const getActiveFilterTags = () => {
         const tags = [];
@@ -160,24 +130,13 @@ export default function SidebarFiltersNuevo({
             });
         }
 
-        // Puffs
-        for (const puff of selectedPuffs || []) {
+        // Mililitros
+        for (const ml of selectedMls || []) {
             tags.push({
-                type: "puffs",
-                key: puff,
-                label: `${puff} puffs`,
-                onRemove: () => onTogglePuffs?.(puff),
-            });
-        }
-
-        // Flavors
-        for (const f of selectedFlavors || []) {
-            const opt = (flavorOptions || []).find((x) => x.value === f);
-            tags.push({
-                type: "flavor",
-                key: f,
-                label: opt?.label || f,
-                onRemove: () => onToggleFlavor?.(f),
+                type: "ml",
+                key: ml,
+                label: `${ml}ml`,
+                onRemove: () => onToggleMl?.(ml),
             });
         }
 
@@ -186,8 +145,7 @@ export default function SidebarFiltersNuevo({
 
     const clearAllFilters = () => {
         onClearBrands?.();
-        onClearPuffs?.();
-        onClearFlavors?.();
+        onClearMls?.();
         onChangePrice?.(null); // 🔥 IMPORTANTE
     };
 
@@ -368,16 +326,16 @@ export default function SidebarFiltersNuevo({
                 </div>
             )}
 
-            {/* Puffs */}
-            {puffsOptions.length > 0 && (
+            {/* Mililitros */}
+            {mlOptions.length > 0 && (
                 <div>
-                    <h4 className="text-sm font-semibold mb-2 uppercase tracking-wide">Puffs</h4>
+                    <h4 className="text-sm font-semibold mb-2 uppercase tracking-wide">Mililitros</h4>
 
                     <div className="flex items-center justify-between mb-2">
-                        {selectedPuffs.length > 0 ? (
+                        {selectedMls.length > 0 ? (
                             <button
                                 type="button"
-                                onClick={onClearPuffs}
+                                onClick={onClearMls}
                                 className="text-xs text-purple-600 hover:underline"
                                 title="Limpiar selección"
                             >
@@ -389,71 +347,15 @@ export default function SidebarFiltersNuevo({
                     </div>
 
                     <div className="space-y-2 max-h-56 overflow-auto pr-1 border rounded p-2">
-                        {puffsOptions.map(({ value, label, count }) => {
+                        {mlOptions.map(({ value, label, count }) => {
                             const numeric = Number(value);
-                            const checked = selectedPuffs.includes(numeric);
+                            const checked = selectedMls.includes(numeric);
                             return (
                                 <label key={numeric} className="flex items-center gap-2 text-sm cursor-pointer">
                                     <input
                                         type="checkbox"
                                         checked={checked}
-                                        onChange={() => onTogglePuffs(numeric)}
-                                        className="rounded border-gray-300"
-                                    />
-                                    <span className="flex-1">
-                                        {label} puffs <span className="text-gray-500">({count})</span>
-                                    </span>
-                                </label>
-                            );
-                        })}
-                    </div>
-                </div>
-            )}
-
-            {/* Sabores */}
-            {flavorOptions.length > 0 && (
-                <div>
-                    <h4 className="text-sm font-semibold mb-2 uppercase tracking-wide">Sabores</h4>
-
-                    <div className="flex items-center justify-between mb-2">
-                        {selectedFlavors.length > 0 ? (
-                            <button
-                                type="button"
-                                onClick={onClearFlavors}
-                                className="text-xs text-purple-600 hover:underline"
-                                title="Limpiar selección"
-                            >
-                                Limpiar selección
-                            </button>
-                        ) : (
-                            <span className="text-xs text-gray-500">Seleccioná uno o más</span>
-                        )}
-                    </div>
-
-                    {/* 🔎 Buscador local de sabores */}
-                    <div className="mb-2">
-                        <input
-                            type="text"
-                            value={flavorSearch}
-                            onChange={(e) => setFlavorSearch(e.target.value)}
-                            placeholder="Buscar sabor..."
-                            className="w-full border rounded px-2 py-1 text-sm"
-                        />
-                    </div>
-
-                    <div id="sf-scroll" className="space-y-2 max-h-56 overflow-auto pr-1 border rounded p-2">
-                        {filteredFlavorOptions.length === 0 && (
-                            <div className="text-xs text-gray-500 px-1">Sin resultados</div>
-                        )}
-
-                        {filteredFlavorOptions.map(({ value, label, count }) => {
-                            const checked = selectedFlavors.includes(value);
-                            return (
-                                <label key={value} className="flex items-center gap-2 text-sm cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        checked={checked}
-                                        onChange={() => onToggleFlavor(value)}
+                                        onChange={() => onToggleMl(numeric)}
                                         className="rounded border-gray-300"
                                     />
                                     <span className="flex-1">
@@ -470,21 +372,6 @@ export default function SidebarFiltersNuevo({
 
     return (
         <>
-            <style>{`
-        /* Firefox */
-        #sf-scroll { scrollbar-width: thin; scrollbar-color: #e5e7eb transparent; }
-        /* WebKit */
-        #sf-scroll::-webkit-scrollbar { width: 10px; }
-        #sf-scroll::-webkit-scrollbar-track { background: transparent; }
-        #sf-scroll::-webkit-scrollbar-thumb {
-          background: #e5e7eb;
-          border-radius: 9999px;
-          border: 2px solid transparent;
-          background-clip: content-box;
-        }
-        #sf-scroll::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
-      `}</style>
-
             <aside className={className}>
                 {/* Botón hamburguesa (mobile) */}
                 <div className="md:hidden mb-3">

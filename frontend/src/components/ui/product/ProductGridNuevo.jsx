@@ -72,8 +72,54 @@ const SLUG_TO_ID = {
 const normalizeBrand = (b = "") =>
     String(b).trim().replace(/\s+/g, " ").toLowerCase();
 
-const normalizeFlavor = (s = "") =>
-    String(s).trim().replace(/\s+/g, " ").toLowerCase();
+const parseMl = (value) => {
+    if (value === null || value === undefined) return null;
+    if (typeof value === "number" && Number.isFinite(value)) return Math.floor(value);
+    const text = String(value).trim();
+    if (!text) return null;
+    const match = text.match(/\d+/);
+    if (!match) return null;
+    const n = Number(match[0]);
+    return Number.isFinite(n) ? Math.floor(n) : null;
+};
+
+const getProductMlValues = (product) => {
+    const out = [];
+    const pushMl = (raw) => {
+        const ml = parseMl(raw);
+        if (ml && ml > 0) out.push(ml);
+    };
+
+    pushMl(product?.volume_ml);
+
+    const rawVolumeOptions = (() => {
+        if (Array.isArray(product?.volume_options)) return product.volume_options;
+        if (Array.isArray(product?.volumeOptions)) return product.volumeOptions;
+        if (typeof product?.volume_options === "string") {
+            try {
+                const parsed = JSON.parse(product.volume_options);
+                return Array.isArray(parsed) ? parsed : [];
+            } catch {
+                return [];
+            }
+        }
+        if (typeof product?.volumeOptions === "string") {
+            try {
+                const parsed = JSON.parse(product.volumeOptions);
+                return Array.isArray(parsed) ? parsed : [];
+            } catch {
+                return [];
+            }
+        }
+        return [];
+    })();
+
+    for (const opt of rawVolumeOptions) {
+        pushMl(opt?.ml ?? opt?.volume_ml ?? opt?.size_ml ?? opt?.volumeMl ?? opt?.sizeMl);
+    }
+
+    return Array.from(new Set(out)).sort((a, b) => a - b);
+};
 
 // -----------------------------
 // Componente
@@ -90,8 +136,7 @@ export default function ProductGridNuevo({ category, hideFilters = false }) {
     // Filtros
     const [priceRange, setPriceRange] = useState({ min: 0, max: Infinity });
     const [selectedBrands, setSelectedBrands] = useState([]);
-    const [selectedPuffs, setSelectedPuffs] = useState([]);
-    const [selectedFlavors, setSelectedFlavors] = useState([]);
+    const [selectedMls, setSelectedMls] = useState([]);
 
     // UI
     const [modalOpen, setModalOpen] = useState(false);
@@ -163,8 +208,7 @@ export default function ProductGridNuevo({ category, hideFilters = false }) {
             });
 
             setSelectedBrands(saved.selectedBrands ?? []);
-            setSelectedPuffs(saved.selectedPuffs ?? []);
-            setSelectedFlavors(saved.selectedFlavors ?? []);
+            setSelectedMls(saved.selectedMls ?? []);
 
             setItemsPerPage(saved.itemsPerPage ?? 12);
 
@@ -204,8 +248,7 @@ export default function ProductGridNuevo({ category, hideFilters = false }) {
             setSearchTerm("");
             setPriceRange({ min: 0, max: Infinity });
             setSelectedBrands([]);
-            setSelectedPuffs([]);
-            setSelectedFlavors([]);
+            setSelectedMls([]);
             setCurrentPage(1);
         }
     }, [slug, category, storageKey]);
@@ -246,47 +289,6 @@ export default function ProductGridNuevo({ category, hideFilters = false }) {
             .sort((a, b) => a.label.localeCompare(b.label));
     }, [categoryProducts]);
 
-    const puffsOptions = useMemo(() => {
-        const counter = new Map();
-
-        for (const p of categoryProducts) {
-            const v = Number(p?.puffs);
-            if (!Number.isFinite(v) || v <= 0) continue;
-            counter.set(v, (counter.get(v) || 0) + 1);
-        }
-
-        return Array.from(counter.entries())
-            .map(([value, count]) => ({ value, count, label: `${value}` }))
-            .sort((a, b) => a.value - b.value);
-    }, [categoryProducts]);
-
-    const flavorOptions = useMemo(() => {
-        const map = new Map();
-
-        for (const p of categoryProducts) {
-            const arr = Array.isArray(p?.flavors) ? p.flavors : [];
-            for (const fRaw of arr) {
-                const key = normalizeFlavor(fRaw);
-                if (!key) continue;
-
-                const prev = map.get(key);
-                if (prev) {
-                    prev.count += 1;
-                } else {
-                    map.set(key, {
-                        value: key,
-                        label: String(fRaw).trim(),
-                        count: 1,
-                    });
-                }
-            }
-        }
-
-        return Array.from(map.values()).sort((a, b) =>
-            a.label.localeCompare(b.label)
-        );
-    }, [categoryProducts]);
-
     const categoryPriceRange = useMemo(() => {
         if (categoryProducts.length === 0) return { min: 0, max: 50000 };
 
@@ -297,6 +299,19 @@ export default function ProductGridNuevo({ category, hideFilters = false }) {
         if (prices.length === 0) return { min: 0, max: 50000 };
 
         return { min: 0, max: Math.max(...prices) };
+    }, [categoryProducts]);
+
+    const mlOptions = useMemo(() => {
+        const counter = new Map();
+        for (const p of categoryProducts) {
+            const values = getProductMlValues(p);
+            for (const ml of values) {
+                counter.set(ml, (counter.get(ml) || 0) + 1);
+            }
+        }
+        return Array.from(counter.entries())
+            .map(([value, count]) => ({ value, count, label: `${value}ml` }))
+            .sort((a, b) => a.value - b.value);
     }, [categoryProducts]);
 
     const effectivePriceRange = useMemo(() => {
@@ -334,27 +349,17 @@ export default function ProductGridNuevo({ category, hideFilters = false }) {
 
             const matchesBrand =
                 !hasBrandFilter || (brandNorm && selectedBrands.includes(brandNorm));
-
-            const matchesPuffs =
-                selectedPuffs.length === 0
+            const productMls = getProductMlValues(product);
+            const matchesMl =
+                selectedMls.length === 0
                     ? true
-                    : (Number(product.puffs) > 0 &&
-                        selectedPuffs.includes(Number(product.puffs)));
-
-            const matchesFlavors =
-                selectedFlavors.length === 0
-                    ? true
-                    : Array.isArray(product.flavors) &&
-                    product.flavors.some((f) =>
-                        selectedFlavors.includes(normalizeFlavor(f))
-                    );
+                    : productMls.some((ml) => selectedMls.includes(ml));
 
             return (
                 matchesSearch &&
                 matchesPrice &&
                 matchesBrand &&
-                matchesPuffs &&
-                matchesFlavors
+                matchesMl
             );
         });
     }, [
@@ -362,8 +367,7 @@ export default function ProductGridNuevo({ category, hideFilters = false }) {
         searchTerm,
         priceRange,
         selectedBrands,
-        selectedPuffs,
-        selectedFlavors,
+        selectedMls,
     ]);
 
     // -----------------------------
@@ -408,8 +412,7 @@ export default function ProductGridNuevo({ category, hideFilters = false }) {
         searchTerm,
         priceRange,
         selectedBrands,
-        selectedPuffs,
-        selectedFlavors,
+        selectedMls,
         sortOrder,
         itemsPerPage,
     ]);
@@ -441,8 +444,7 @@ export default function ProductGridNuevo({ category, hideFilters = false }) {
                 searchTerm,
                 priceRange: pr,
                 selectedBrands,
-                selectedPuffs,
-                selectedFlavors,
+                selectedMls,
                 itemsPerPage,
                 currentPage,
                 sortOrder,
@@ -456,8 +458,7 @@ export default function ProductGridNuevo({ category, hideFilters = false }) {
         searchTerm,
         priceRange,
         selectedBrands,
-        selectedPuffs,
-        selectedFlavors,
+        selectedMls,
         itemsPerPage,
         currentPage,
         sortOrder,
@@ -500,8 +501,7 @@ export default function ProductGridNuevo({ category, hideFilters = false }) {
         // estado limpio al cambiar categoría
         setSearchTerm("");
         setSelectedBrands([]);
-        setSelectedPuffs([]);
-        setSelectedFlavors([]);
+        setSelectedMls([]);
         setSortOrder("default");
         setPriceRange({ min: 0, max: Infinity });
         setCurrentPage(1);
@@ -518,67 +518,44 @@ export default function ProductGridNuevo({ category, hideFilters = false }) {
 
 
     useLayoutEffect(() => {
-        if (gridRestoredRef.current) return;
-
         const lastIdRaw = sessionStorage.getItem("lastProductId");
         if (!lastIdRaw) return;
 
         const lastId = Number(lastIdRaw);
         if (!Number.isFinite(lastId)) {
             sessionStorage.removeItem("lastProductId");
-            gridRestoredRef.current = true;
             return;
         }
 
-        // Esperamos a tener el listado completo para saber en qué página está.
-        // Esperamos a tener el listado completo para saber en qué página está.
-        if (sortedProducts.length === 0) return;
+        if (paginatedProducts.length === 0) return;
 
-        // si tenemos página guardada, primero forzamos esa página
         const forcedPage = Number(sessionStorage.getItem("lastProductPage"));
         if (Number.isFinite(forcedPage) && forcedPage > 0 && forcedPage !== currentPage) {
-            sessionStorage.removeItem("lastProductPage");
             setCurrentPage(forcedPage);
             return;
         }
 
-        const targetIndex = sortedProducts.findIndex(
-            (p) => Number(p.id) === lastId
-        );
+        const scrollToProduct = () => {
+            const el = document.querySelector(`[data-product-id="${lastId}"]`);
+            if (!el) return;
 
+            const y = el.getBoundingClientRect().top + window.pageYOffset - 120;
 
-        if (targetIndex === -1) {
-            // Si ya no existe por filtros/categoría, limpiamos y salimos.
+            window.scrollTo({
+                top: y,
+                behavior: "auto"
+            });
+
             sessionStorage.removeItem("lastProductId");
             sessionStorage.removeItem("lastProductPage");
-            gridRestoredRef.current = true;
+        };
 
-            return;
-        }
-
-        const targetPage = Math.floor(targetIndex / itemsPerPage) + 1;
-
-        // Si no estamos en la página correcta, la seteamos y esperamos próximo render.
-        if (targetPage !== currentPage) {
-            sessionStorage.removeItem("lastProductPage");
-            setCurrentPage(targetPage);
-            return;
-        }
-
-        // Ya en la página correcta: hacemos scroll al producto.
-        const el = document.querySelector(`[data-product-id="${lastId}"]`);
-        if (!el) return;
-
-        el.scrollIntoView({
-            block: "center",
-            behavior: "auto"
+        // esperamos el layout final (incluye imágenes)
+        requestAnimationFrame(() => {
+            requestAnimationFrame(scrollToProduct);
         });
 
-        sessionStorage.removeItem("lastProductId");
-        sessionStorage.removeItem("lastProductPage");
-        gridRestoredRef.current = true;
-    }, [sortedProducts, paginatedProducts, currentPage, itemsPerPage]);
-
+    }, [paginatedProducts, currentPage]);
 
     useEffect(() => {
         gridRestoredRef.current = false;
@@ -627,22 +604,14 @@ export default function ProductGridNuevo({ category, hideFilters = false }) {
                             )
                         }
                         onClearBrands={() => setSelectedBrands([])}
-                        puffsOptions={puffsOptions}
-                        selectedPuffs={selectedPuffs}
-                        onTogglePuffs={(v) =>
-                            setSelectedPuffs((prev) =>
+                        mlOptions={mlOptions}
+                        selectedMls={selectedMls}
+                        onToggleMl={(v) =>
+                            setSelectedMls((prev) =>
                                 prev.includes(v) ? prev.filter((x) => x !== v) : [...prev, v]
                             )
                         }
-                        onClearPuffs={() => setSelectedPuffs([])}
-                        flavorOptions={flavorOptions}
-                        selectedFlavors={selectedFlavors}
-                        onToggleFlavor={(v) =>
-                            setSelectedFlavors((prev) =>
-                                prev.includes(v) ? prev.filter((x) => x !== v) : [...prev, v]
-                            )
-                        }
-                        onClearFlavors={() => setSelectedFlavors([])}
+                        onClearMls={() => setSelectedMls([])}
                         price={isPriceFilterApplied ? effectivePriceRange : null}
                         onChangePrice={(newRange) => {
                             if (!newRange) {
