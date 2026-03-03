@@ -56,19 +56,19 @@ export default function InicioNuevo() {
 
                 {/* Contenido */}
                 <div className="relative z-10 px-6 max-w-3xl">
-                    <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 tracking-wide">
+                    <h1 className="text-4xl md:text-6xl font-serif font-semibold text-white mb-4 tracking-wide">
                         Fragancias Orientales
                     </h1>
 
-                    <p className="text-lg md:text-xl text-gray-200 mb-6">
+                    <p className="text-lg md:text-xl font-serif text-gray-200 mb-6 tracking-wide">
                         Fragancias intensas • Elegancia oriental • Exclusividad
                     </p>
 
                     <a
                         href={WA_URL}
-                        className="inline-block px-8 py-3 bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white rounded-lg font-semibold hover:opacity-90 transition"
+                        className="inline-block px-8 py-3 bg-[#232325] text-white rounded-lg font-medium tracking-wide hover:bg-black transition-colors"
                     >
-                        Consultar por WhatsApp
+                        Solicitar Asesoría
                     </a>
                 </div>
 
