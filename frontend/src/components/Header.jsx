@@ -309,25 +309,22 @@ export default function Header() {
         <div className={["flex justify-between items-center", isScrolled ? "h-14 py-1" : "h-16 py-3"].join(" ")}>
 
           {/* Mobile hamburger menu - left */}
+          {/* Mobile hamburger menu - left */}
           <div className="md:hidden">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               aria-label="Abrir menú"
-              className="bg-transparent border-0 p-0 m-0 text-white hover:text-gray-200"
+              className="bg-transparent border-0 p-3 text-white hover:text-gray-200 flex items-center justify-center"
               style={{ backgroundColor: 'transparent' }}
             >
               <svg className="w-5 h-5 stroke-[1.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                {isMenuOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                )}
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
           </div>
           {/* Logo centrado */}
-          <div className="absolute left-1/2 -translate-x-1/2">
-            <Link to={withWholesale("/inicio")} aria-label="Ir al inicio">
+          <div className="absolute left-1/2 -translate-x-1/2 pointer-events-none">
+            <Link to={withWholesale("/inicio")} aria-label="Ir al inicio" className="pointer-events-auto">
               <img
                 src={shatha}
                 alt="Shatha"
@@ -587,14 +584,26 @@ export default function Header() {
 
 
         {/* Mobile Menu */}
+        {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="md:hidden fixed inset-0 z-50 bg-black/50" onClick={() => setIsMenuOpen(false)}>
+          <div className="md:hidden absolute left-0 right-0 top-full z-50">
             <div
               ref={mobileMenuRef}
-              className="fixed left-0 right-0 bg-[#111113] shadow-xl border-t border-amber-500/20 px-4 pt-4 pb-5 space-y-3 font-serif tracking-wide"
-              style={{ top: isScrolled ? 98 : 64 }}
-              onClick={(e) => e.stopPropagation()}
+              className="bg-[#111113] shadow-xl border-t border-amber-500/20 px-4 pt-1 pb-5 space-y-3 font-serif tracking-wide"
             >
+              {/* Botón X dedicado para cerrar */}
+              <div className="flex justify-end -mt-1 -mr-1">
+                <button
+                  onClick={(e) => { e.stopPropagation(); setIsMenuOpen(false); }}
+                  aria-label="Cerrar menú"
+                  className="bg-transparent border-0 p-3 text-white hover:text-amber-300 flex items-center justify-center"
+                  style={{ backgroundColor: 'transparent' }}
+                >
+                  <svg className="w-5 h-5 stroke-[1.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
 
               <Link
                 to={withWholesale("/inicio")}
