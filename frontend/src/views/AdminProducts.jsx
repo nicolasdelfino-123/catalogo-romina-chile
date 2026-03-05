@@ -1021,14 +1021,15 @@ export default function AdminProducts() {
                                     {editingPriceId === p.id ? (
                                         <div className="flex items-center justify-center gap-2">
                                             <input
-                                                className="w-24 border rounded px-2 py-1 text-right"
-                                                type="number"
-                                                step="0.01"
-                                                inputMode="decimal"
-                                                {...noSpin}
+                                                className="w-24 border rounded px-2 py-1 text-right tabular-nums"
+                                                type="text"
+                                                inputMode="numeric"
                                                 autoFocus
-                                                value={editingPrice}
-                                                onChange={(e) => setEditingPrice(e.target.value)}
+                                                value={Number(editingPrice || 0).toLocaleString("es-AR")}
+                                                onChange={(e) => {
+                                                    const raw = e.target.value.replace(/\./g, "").replace(/[^\d]/g, "");
+                                                    setEditingPrice(raw);
+                                                }}
                                                 onKeyDown={(e) => {
                                                     if (e.key === "Enter") confirmEditPrice();
                                                     if (e.key === "Escape") cancelEditPrice();
@@ -1053,7 +1054,7 @@ export default function AdminProducts() {
                                         </div>
                                     ) : (
                                         <div className="flex items-center justify-center gap-2">
-                                            <span className="tabular-nums">${p.price}</span>
+                                            <span className="tabular-nums">$ {Number(p.price).toLocaleString("es-AR")}</span>
                                             <button
                                                 type="button"
                                                 className="px-2 py-1 border rounded hover:bg-gray-50"
@@ -1069,14 +1070,15 @@ export default function AdminProducts() {
                                     {editingWholesaleId === p.id ? (
                                         <div className="flex items-center justify-center gap-2">
                                             <input
-                                                className="w-24 border rounded px-2 py-1 text-right"
-                                                type="number"
-                                                step="0.01"
-                                                inputMode="decimal"
-                                                {...noSpin}
+                                                className="w-24 border rounded px-2 py-1 text-right tabular-nums"
+                                                type="text"
+                                                inputMode="numeric"
                                                 autoFocus
-                                                value={editingWholesale}
-                                                onChange={(e) => setEditingWholesale(e.target.value)}
+                                                value={Number(editingWholesale || 0).toLocaleString("es-AR")}
+                                                onChange={(e) => {
+                                                    const raw = e.target.value.replace(/\./g, "").replace(/[^\d]/g, "");
+                                                    setEditingWholesale(raw);
+                                                }}
                                                 onKeyDown={(e) => {
                                                     if (e.key === "Enter") confirmEditWholesale();
                                                     if (e.key === "Escape") cancelEditWholesale();
@@ -1100,7 +1102,7 @@ export default function AdminProducts() {
                                     ) : (
                                         <div className="flex items-center justify-center gap-2">
                                             <span className="tabular-nums">
-                                                {p.price_wholesale ? `$${p.price_wholesale}` : "—"}
+                                                {p.price_wholesale ? `US$ ${Number(p.price_wholesale).toLocaleString("es-AR")}` : "—"}
                                             </span>
                                             <button
                                                 type="button"

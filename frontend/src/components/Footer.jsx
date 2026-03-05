@@ -1,5 +1,6 @@
 import React from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import logofooter from "../assets/logofooter.png";
 
 const phone = "5493533497041";
 const message = encodeURIComponent(`Hola, tengo una consulta sobre el producto...`);
@@ -22,11 +23,17 @@ const Footer = () => {
             <footer className="bg-[#0b0b0d] text-gray-300 py-12 font-serif">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                        <div>
-                            <h3 className="text-lg font-semibold mb-4">Perfumes Árabes</h3>
-                            <p className="text-gray-400">La mejor tienda de perfumes en Argentina</p>
-                        </div>
+                        <div className="flex flex flex-col items-center">
+                            <img
+                                src={logofooter}
+                                alt="Shatha"
+                                className="h-56 mb-3 -mt-9 opacity-95"
+                            />
 
+                            <p className="text-gray-400 text-sm max-w-xs -mt-5 text-center">
+                                Perfumes árabes originales en Argentina.
+                            </p>
+                        </div>
 
 
                         {/* 🟢 Productos */}
