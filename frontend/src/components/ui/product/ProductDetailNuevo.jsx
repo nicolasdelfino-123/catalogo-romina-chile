@@ -130,8 +130,9 @@ const parsePrice = (value) => {
 };
 
 const parseStock = (value) => {
+    if (value === null || value === undefined || value === "") return null;
     const n = Number(value);
-    return Number.isFinite(n) ? Math.max(0, Math.floor(n)) : 0;
+    return Number.isFinite(n) ? Math.max(0, Math.floor(n)) : null;
 };
 
 /* =========================
@@ -291,7 +292,7 @@ export default function ProductDetailNuevo() {
             const found = product.flavor_catalog.find(f => f.name === selectedFlavor);
             if (found) return found.stock;
         }
-        if (selectedSize && Number.isFinite(Number(selectedSize.stock))) {
+        if (selectedSize && selectedSize.stock !== null && selectedSize.stock !== undefined) {
             return Number(selectedSize.stock);
         }
         return product?.stock ?? 0;

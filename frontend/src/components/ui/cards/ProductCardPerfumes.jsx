@@ -41,8 +41,9 @@ const parsePrice = (value) => {
 };
 
 const parseStock = (value) => {
+    if (value === null || value === undefined || value === "") return null;
     const n = Number(value);
-    return Number.isFinite(n) ? Math.max(0, Math.floor(n)) : 0;
+    return Number.isFinite(n) ? Math.max(0, Math.floor(n)) : null;
 };
 
 const CATEGORY_ID_TO_NAME = {
