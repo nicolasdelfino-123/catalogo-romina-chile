@@ -365,7 +365,12 @@ export default function Header() {
 
 
             {/* Dropdown de Productos */}
-            <div className="relative" ref={productsDropdownRef}>
+            <div
+              className="relative group"
+              ref={productsDropdownRef}
+              onMouseEnter={() => setProductsDropdownOpen(true)}
+              onMouseLeave={() => setTimeout(() => setProductsDropdownOpen(false), 300)}
+            >
               <button
                 onClick={() => setProductsDropdownOpen(!productsDropdownOpen)}
                 className="flex items-center text-gray-300 hover:text-amber-300 transition-all duration-300 bg-transparent p-0 border-0 rounded-none appearance-none focus:outline-none focus:ring-0 hover:bg-transparent active:bg-transparent uppercase"
@@ -384,39 +389,45 @@ export default function Header() {
               </button>
 
               {/* Dropdown Menu */}
-              {productsDropdownOpen && (
-                <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+              <div
+                className={`absolute top-full left-0 w-72 bg-[#111113] rounded-xl shadow-2xl border border-amber-500/20 backdrop-blur-lg z-50 overflow-hidden
+  transition-all duration-300 ease-out
+  ${productsDropdownOpen
+                    ? "opacity-100 translate-y-0 visible"
+                    : "opacity-0 -translate-y-2 invisible"}
+`}
+              >
 
-                  <div className="py-2">
+                <div className="pt-3 pb-2 border-t-2 border-amber-500/60">
+                  <Link
+                    to={withWholesale("/products")}
+                    className="flex items-center px-5 py-3 text-sm text-gray-300 hover:text-amber-300 hover:bg-[#1a1a1d] transition-all duration-200"
+                    onClick={() => setProductsDropdownOpen(false)}
+                  >
+                    Ver todos los productos
+                  </Link>
+                  {productCategories.map((category) => (
                     <Link
-                      to={withWholesale("/products")}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 font-medium border-b border-gray-100"
+                      key={category.route}
+                      to={withWholesale(category.route)}
+                      className="block px-5 py-3 text-sm text-gray-300 hover:text-amber-300 hover:bg-[#1a1a1d] transition-all duration-200 border-b border-amber-500/10"
                       onClick={() => setProductsDropdownOpen(false)}
                     >
-                      Ver todos los productos
+                      <span className="mr-3 text-base opacity-80">{category.icon}</span>
+                      {category.name}
                     </Link>
-                    {productCategories.map((category) => (
-                      <Link
-                        key={category.route}
-                        to={withWholesale(category.route)}
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
-                        onClick={() => setProductsDropdownOpen(false)}
-                      >
-                        <span className="mr-3">{category.icon}</span>
-                        {category.name}
-                      </Link>
-                    ))}
-                  </div>
+                  ))}
                 </div>
-              )}
+              </div>
+
             </div>
 
-            <Link
+            {/*  <Link
               to="/mayorista"
               className="text-gray-300 hover:text-amber-300 transition-all duration-300"
             >
               Mayoristas
-            </Link>
+            </Link> */}
             <a
               href="/inicio#contacto"
               onClick={goToContact}
