@@ -196,8 +196,8 @@ Pago: ${customerData.payment}
       product_id: item.id,   // 👈 obligatorio
       quantity: item.quantity,
       price: isWholesale
-        ? (item.price_wholesale > 0 ? item.price_wholesale : 0)
-        : item.price,
+        ? (Number(item.price_wholesale) > 0 ? Number(item.price_wholesale) : 0)
+        : (Number(item.price) > 0 ? Number(item.price) : 0),
       selected_flavor: item.selectedFlavor || null,
       selected_size_ml: getSelectedMl(item)
     }));
