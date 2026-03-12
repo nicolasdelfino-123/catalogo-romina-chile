@@ -211,7 +211,7 @@ Pago: ${customerData.payment}
 
     // 🔹 enviar pedido al backend
     try {
-      await fetch(`${import.meta.env.VITE_BACKEND_URL}/public/orders`, {
+      await fetch(`/public/orders`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
