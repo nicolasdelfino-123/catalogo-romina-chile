@@ -22,12 +22,11 @@ export default function Asesoria() {
                     </h2>
 
                     <p className="text-gray-600 text-lg leading-relaxed text-justify">
-                        Cada fragancia tiene una personalidad única y una historia que contar.
-                        En nuestra tienda seleccionamos perfumes pensados para distintos estilos, momentos y ocasiones.
+                        La perfumería árabe se distingue por su carácter, su elegancia y su esencia refinada.
                     </p>
 
                     <p className="text-gray-600 text-lg leading-relaxed text-justify">
-                        Si querés encontrar el aroma que mejor te represente, podemos asesorarte y ayudarte a descubrir la fragancia ideal para vos.
+                        Te asesoramos para encontrar la fragancia ideal según tu estilo, tu personalidad y el momento que quieras destacar.
                     </p>
 
                     <a
