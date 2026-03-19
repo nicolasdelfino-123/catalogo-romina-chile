@@ -436,13 +436,13 @@ export default function ProductDetailNuevo() {
 
                     {/* INFO */}
                     <div>
-                        <h1 className="text-2xl sm:text-4xl font-serif font-semibold text-[#232325] mb-4 tracking-wide">{product.name}</h1>
+                        <h1 className="text-2xl sm:text-3xl font-serif font-semibold text-[#232325] mb-4 tracking-wide">{product.name}</h1>
                         {product.brand && (
                             <p className="text-base font-serif text-stone-600 mb-4 tracking-wide">Marca: {product.brand}</p>
                         )}
 
 
-                        <div className="text-2xl sm:text-3xl font-semibold text-black mb-4">
+                        <div className="text-2xl sm:text-2xl font-semibold text-black mb-4">
                             {finalPrice !== null
                                 ? `${pricePrefix}${formatPrice(finalPrice)}`
                                 : "Consultar"}
