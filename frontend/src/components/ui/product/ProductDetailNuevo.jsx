@@ -525,11 +525,13 @@ export default function ProductDetailNuevo() {
                             onClick={handleAddToCart}
                             disabled={getAvailableStock() <= 0}
                             className={`w-full py-3 rounded-md font-medium text-sm tracking-wide transition-all duration-300 ${getAvailableStock() <= 0
-                                ? "bg-stone-300 text-stone-500 cursor-not-allowed"
+                                ? "border border-stone-300 bg-stone-100 text-white cursor-not-allowed shadow-none hover:bg-stone-100"
                                 : "bg-black text-white hover:bg-stone-800"
                                 }`}
                         >
-                            {getAvailableStock() <= 0 ? "Sin stock" : "Agregar al carrito"}
+                            <span className={getAvailableStock() <= 0 ? "text-stone-900" : ""}>
+                                {getAvailableStock() <= 0 ? "Agotado" : "Agregar al carrito"}
+                            </span>
                         </button>
 
                         {/* TABS */}
