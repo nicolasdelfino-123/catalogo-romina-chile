@@ -614,9 +614,13 @@ export default function AdminProducts() {
         }
     };
     const startEditStock = (p, currentStock) => {
+        const initialStock = currentStock ?? p.stock ?? 0;
         setEditingStockId(p.id);
-        setEditingStock(String(currentStock ?? p.stock ?? 0));
+        setEditingStock(Number(initialStock) === 0 ? "" : String(initialStock));
     };
+
+
+
 
     const cancelEditStock = () => {
         setEditingStockId(null);
@@ -1535,7 +1539,8 @@ export default function AdminProducts() {
                                                     price_wholesale: "",
                                                     volume_ml: "",
                                                     volume_stock: "",
-                                                    volume_options: normalizeVolumeOptions(p.volume_options || [], { keepWithoutMl: true }),
+                                                    volume_options: getMlOptionsForTable(p),
+
                                                     image_url: safeImage,
                                                     image_urls: safeGallery,
                                                     flavor_catalog: catalog,
