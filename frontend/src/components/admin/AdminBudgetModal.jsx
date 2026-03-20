@@ -75,7 +75,7 @@ const buildBudgetMessage = ({
         "",
         ...lines,
         "",
-        `Total estimado: ${currency} ${formatPrice(total)}`,
+        `Total: ${currency} ${formatPrice(total)}`,
         "",
         "Cualquier ajuste que necesites, te lo preparo.",
     ].join("\n");
