@@ -1,7 +1,10 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import sinImagen from '@/assets/sin_imagen.jpg'
 import { Link, useNavigate } from "react-router-dom";
 import { formatPrice } from "../utils/price.js";
+import AdminBudgetToolbar from "../components/admin/AdminBudgetToolbar.jsx";
+import AdminBudgetSelectionCell from "../components/admin/AdminBudgetSelectionCell.jsx";
+import AdminBudgetModal from "../components/admin/AdminBudgetModal.jsx";
 import {
     CATEGORY_ID_TO_NAME as ID_TO_CATEGORY_NAME,
     mapCategoryIdFromName,
@@ -387,6 +390,10 @@ export default function AdminProducts() {
 
     const [editingWholesaleId, setEditingWholesaleId] = useState(null);
     const [editingWholesale, setEditingWholesale] = useState("");
+    const [budgetMode, setBudgetMode] = useState(false);
+    const [budgetFilter, setBudgetFilter] = useState("all");
+    const [budgetSelections, setBudgetSelections] = useState({});
+    const [budgetModalOpen, setBudgetModalOpen] = useState(false);
 
 
 
@@ -982,6 +989,57 @@ export default function AdminProducts() {
             || options[0];
     };
 
+    const getBudgetSelection = (productId) => {
+        const current = budgetSelections[productId] || {};
+        const quantity = Math.max(1, Number(current.quantity) || 1);
+        return {
+            checked: Boolean(current.checked),
+            quantity,
+        };
+    };
+
+    const updateBudgetSelection = (productId, patch) => {
+        setBudgetSelections((prev) => {
+            const current = prev[productId] || { checked: false, quantity: 1 };
+            return {
+                ...prev,
+                [productId]: {
+                    ...current,
+                    ...patch,
+                    quantity: Math.max(1, Number((patch && patch.quantity) ?? current.quantity) || 1),
+                },
+            };
+        });
+    };
+
+    const selectedBudgetItems = useMemo(() => {
+        return products
+            .filter((product) => getBudgetSelection(product.id).checked)
+            .map((product) => {
+                const selectedOption = getSelectedPriceOption(product);
+                const quantity = getBudgetSelection(product.id).quantity;
+                const mlValue =
+                    Number.isFinite(Number(selectedOption?.ml)) && Number(selectedOption.ml) > 0
+                        ? Number(selectedOption.ml)
+                        : null;
+
+                return {
+                    id: product.id,
+                    name: product.name,
+                    quantity,
+                    ml: mlValue,
+                    mlLabel: mlValue ? `${mlValue} ML` : "Sin ML",
+                    retailPrice: Number.isFinite(Number(selectedOption?.price)) ? Number(selectedOption.price) : 0,
+                    wholesalePrice:
+                        Number.isFinite(Number(selectedOption?.price_wholesale)) && Number(selectedOption.price_wholesale) > 0
+                            ? Number(selectedOption.price_wholesale)
+                            : 0,
+                };
+            });
+    }, [products, budgetSelections, selectedMlByProduct]);
+
+    const selectedBudgetCount = selectedBudgetItems.length;
+
     const filtered = products.filter((p) => {
         const matchesSearch =
             !q ||
@@ -1003,8 +1061,12 @@ export default function AdminProducts() {
             selectedStockFilter === "todos" ||
             (selectedStockFilter === "sin_stock" && productStock === 0) ||
             (selectedStockFilter === "stock_bajo" && productStock > 0 && productStock <= 5);
+        const matchesBudget =
+            !budgetMode ||
+            budgetFilter !== "selected" ||
+            getBudgetSelection(p.id).checked;
 
-        return matchesSearch && matchesCategory && matchesStatus && matchesStock;
+        return matchesSearch && matchesCategory && matchesStatus && matchesStock && matchesBudget;
     });
 
     const activeFilters = [
@@ -1028,6 +1090,13 @@ export default function AdminProducts() {
                 onClear: () => setSelectedStockFilter("todos"),
             }
             : null,
+        budgetMode && budgetFilter === "selected"
+            ? {
+                key: "budget",
+                label: "Presupuesto: seleccionados",
+                onClear: () => setBudgetFilter("all"),
+            }
+            : null,
     ].filter(Boolean);
 
     const hasActiveFilters = activeFilters.length > 0;
@@ -1037,6 +1106,7 @@ export default function AdminProducts() {
         setSelectedCategory("Todos");
         setSelectedStatus("todos");
         setSelectedStockFilter("todos");
+        setBudgetFilter("all");
     };
 
 
@@ -1057,8 +1127,8 @@ export default function AdminProducts() {
             <h1 className="text-2xl font-bold mb-4 text-center">Admin Productos</h1>
 
             {/* Barra superior */}
-            <div className="flex flex-col sm:flex-row sm:items-end gap-3 mb-4">
-                <div className="flex flex-col flex-1 min-w-0">
+            <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-end gap-3 mb-4">
+                <div className={`flex flex-col min-w-0 ${budgetMode ? "sm:basis-full sm:order-last" : "flex-1"}`}>
                     <label className="text-[11px] font-semibold uppercase tracking-wide text-gray-500 mb-1">
                         Buscar
                     </label>
@@ -1115,6 +1185,26 @@ export default function AdminProducts() {
                         <option value="stock_bajo">Ver stock bajo</option>
                     </select>
                 </div>
+                <AdminBudgetToolbar
+                    isActive={budgetMode}
+                    selectedCount={selectedBudgetCount}
+                    budgetFilter={budgetFilter}
+                    onBudgetFilterChange={setBudgetFilter}
+                    onStart={() => {
+                        setBudgetMode(true);
+                        setBudgetFilter("all");
+                    }}
+                    onConfirm={() => {
+                        if (selectedBudgetCount === 0) return;
+                        setBudgetModalOpen(true);
+                    }}
+                    onCancel={() => {
+                        setBudgetMode(false);
+                        setBudgetFilter("all");
+                        setBudgetSelections({});
+                        setBudgetModalOpen(false);
+                    }}
+                />
                 <button
                     onClick={() => setForm({
                         category_id: 1,
@@ -1254,6 +1344,12 @@ export default function AdminProducts() {
                 <table className="w-full text-sm border">
                     <thead className="bg-gray-50">
                         <tr>
+                            {budgetMode && (
+                                <>
+                                    <th className="w-10 p-2 text-center"></th>
+                                    <th className="w-28 p-2 text-center">Cant.</th>
+                                </>
+                            )}
                             <th className="p-2 text-left">Producto</th>
                             <th className="p-2 text-left">Descripción corta</th>
                             <th className="p-2 text-left">Descripción larga</th>
@@ -1285,6 +1381,14 @@ export default function AdminProducts() {
 
                             return (
                                 <tr key={p.id} className="border-t">
+                                    {budgetMode && (
+                                        <AdminBudgetSelectionCell
+                                            checked={getBudgetSelection(p.id).checked}
+                                            quantity={getBudgetSelection(p.id).quantity}
+                                            onCheckedChange={(checked) => updateBudgetSelection(p.id, { checked })}
+                                            onQuantityChange={(quantity) => updateBudgetSelection(p.id, { quantity })}
+                                        />
+                                    )}
                                     <td className="p-2">
                                         <div>
                                             <div className="font-medium">{p.name}</div>
@@ -1545,6 +1649,21 @@ export default function AdminProducts() {
             </div>
 
             {filtered.length === 0 && <div className="text-center py-8 text-gray-500">No se encontraron productos</div>}
+
+            <AdminBudgetModal
+                open={budgetModalOpen}
+                items={selectedBudgetItems}
+                onClose={() => setBudgetModalOpen(false)}
+                onRemoveItem={(productId) => {
+                    setBudgetSelections((prev) => ({
+                        ...prev,
+                        [productId]: {
+                            checked: false,
+                            quantity: 1,
+                        },
+                    }));
+                }}
+            />
 
             {/* Modal edición/creación */}
             {form && (
