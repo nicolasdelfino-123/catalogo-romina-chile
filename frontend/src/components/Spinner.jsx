@@ -1,6 +1,6 @@
 // src/components/Spinner.jsx
 import { useState, useEffect } from 'react';
-import spinner from "@/assets/spinner.gif";
+import spinner from "@/assets/spinner_demo.gif";
 
 export default function Spinner({ images = [], minDelay = 500, onLoadComplete }) {
     const [loading, setLoading] = useState(true);
