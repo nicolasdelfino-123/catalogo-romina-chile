@@ -16,12 +16,9 @@ from app import db, bcrypt
 def create_admin_user():
     """Crear un usuario administrador"""
 
-    admin_email = os.getenv("ADMIN_EMAIL")
-    admin_password = os.getenv("ADMIN_PASSWORD")
 
-    if not admin_email or not admin_password:
-        print("❌ ADMIN_EMAIL o ADMIN_PASSWORD no están definidos en el .env")
-        return
+    admin_email = "attar@attar.com"
+    admin_password = "admin"
 
     try:
         existing_admin = User.query.filter_by(email=admin_email).first()
@@ -32,7 +29,7 @@ def create_admin_user():
         admin_user = User(
             email=admin_email,
             password=bcrypt.generate_password_hash(admin_password).decode("utf-8"),
-            name="Shatha",
+            name="Administrador",
             phone="1234567890",
             is_admin=True,
             is_active=True

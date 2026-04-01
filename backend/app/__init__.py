@@ -67,11 +67,16 @@ def create_app():
     from app.routes.public_bp import public_bp
     from app.routes.admin_bp import admin_bp
     from app.routes.mercadopago_bp import mercadopago_bp
+    from app.routes.password_bp import password_bp
+    from app.routes.persistent_login_bp import persistent_login_bp
 
     app.register_blueprint(user_bp, url_prefix='/user')
     app.register_blueprint(public_bp, url_prefix='/public')
     app.register_blueprint(admin_bp, url_prefix='/admin')
     app.register_blueprint(mercadopago_bp, url_prefix='/api/mercadopago')
+    app.register_blueprint(password_bp)
+    app.register_blueprint(persistent_login_bp)
+    
 
     # ⚠️ No hay api.py adicional; /me/address no existe. Usar /user/address en el front.
     return app

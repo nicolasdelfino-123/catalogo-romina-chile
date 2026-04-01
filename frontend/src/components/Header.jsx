@@ -759,6 +759,7 @@ export default function Header() {
                   store.user && (
                     <div className="border-t border-gray-700 pt-2">
 
+                      {/* Saludo personalizado */}
                       <div className="px-3 py-2 text-sm text-gray-300">
                         Hola Administrador
                       </div>
