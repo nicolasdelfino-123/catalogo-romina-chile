@@ -9,7 +9,7 @@ import zarpados from '@/assets/zarpados-22.png'
 import { withWholesale } from "../utils/navigation.js";
 import { formatPrice } from "../utils/price.js";
 import { Search, ShoppingCart } from "lucide-react";
-import shatha from '@/assets/logo_attar_prueba.png'
+import shatha from '@/assets/logo_danna.jpeg'
 import { PERFUME_CATEGORY_DEFINITIONS } from "../utils/perfumeCategories.js";
 
 const API = import.meta.env.VITE_BACKEND_URL?.replace(/\/+$/, "") || "";
@@ -303,7 +303,7 @@ export default function Header() {
     <>
       <header
         className={[
-          "fixed top-0 left-0 right-0 md:sticky md:top-0 z-50 bg-[#0B0608]/95 border-b border-yellow-600/20 overflow-visible",
+          "fixed top-0 left-0 right-0 md:sticky md:top-0 z-50 bg-[white]/95 border-b border-yellow-600/20 overflow-visible",
           "transition-shadow duration-300",
           isScrolled ? "shadow-lg" : "shadow-none"
         ].join(" ")}
@@ -324,7 +324,7 @@ export default function Header() {
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 aria-label="Abrir menú"
-                className="bg-transparent border-0 p-0 text-white hover:text-gray-200 flex items-center justify-center"
+                className="bg-transparent border-0 p-0 text-black hover:text-gray-200 flex items-center justify-center"
                 style={{ backgroundColor: 'transparent' }}
               >
                 <svg className="w-5 h-5 stroke-[1.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -338,7 +338,19 @@ export default function Header() {
                 <img
                   src={shatha}
                   alt="Shatha"
-                  className="mt-[-0px] md:mt-[-0px] h-[55px] md:h-[55px] object-contain transition-all duration-300"
+                  className="
+  mt-[0px]          /* MOBILE: subir (-) / bajar (+) */
+  md:mt-[0px]       /* DESKTOP */
+
+  h-[62px]          /* MOBILE: altura */
+  md:h-[63px]       /* DESKTOP */
+
+  w-[250px]         /* MOBILE: ancho */
+  md:w-[590px]      /* DESKTOP */
+
+  object-contain
+  transition-all duration-300
+"
                 />
               </Link>
             </div>
@@ -370,8 +382,13 @@ export default function Header() {
           </div> */}
 
             {/* Navigation - Desktop */}
-            <nav className="hidden md:flex h-full items-center space-x-10 font-serif tracking-wider text-sm uppercase">
-              <Link to={withWholesale("/inicio")} className="text-gray-300 hover:text-amber-300 transition-all duration-300">Inicio</Link>
+            <nav className="hidden md:flex h-full items-center space-x-10 font-serif tracking-wider text-sm uppercase text-black">
+              <Link
+                to={withWholesale("/inicio")}
+                className="text-black hover:text-amber-300 transition-all duration-300"
+              >
+                Inicio
+              </Link>
 
 
               {/* Dropdown de Productos */}
@@ -389,7 +406,7 @@ export default function Header() {
               >
                 <button
                   onClick={() => setProductsDropdownOpen(!productsDropdownOpen)}
-                  className="flex items-center text-gray-300 hover:text-amber-300 transition-all duration-300 bg-transparent p-0 border-0 rounded-none appearance-none focus:outline-none focus:ring-0 hover:bg-transparent active:bg-transparent uppercase"
+                  className="flex items-center text-black hover:text-amber-300 transition-all duration-300 bg-transparent p-0 border-0 rounded-none appearance-none focus:outline-none focus:ring-0 hover:bg-transparent active:bg-transparent uppercase"
                   style={{ backgroundColor: 'transparent', boxShadow: 'none' }}
                 >
 
@@ -455,7 +472,7 @@ export default function Header() {
               <a
                 href={withWholesale("/inicio") + "#asesoria"}
                 onClick={goToContact}
-                className="text-gray-300 hover:text-amber-300 transition-all duration-300"
+                className="text-black hover:text-amber-300 transition-all duration-300"
               >
                 Contacto
               </a>
@@ -473,7 +490,7 @@ export default function Header() {
                 aria-label="Buscar productos"
                 title="Buscar"
               >
-                <Search className="w-5 h-5 stroke-[1.5] text-gray-300 hover:text-amber-300 transition-colors duration-300" />
+                <Search className="w-5 h-5 stroke-[1.5] text-black hover:text-amber-300 transition-colors duration-300" />
               </button>
 
 
@@ -485,7 +502,7 @@ export default function Header() {
                 aria-label="Abrir carrito"
                 title="Carrito"
               >
-                <ShoppingCart className="w-5 h-5 stroke-[1.5] text-gray-300 hover:text-amber-300 transition-colors duration-300" />
+                <ShoppingCart className="w-5 h-5 stroke-[1.5] text-black hover:text-amber-300 transition-colors duration-300" />
                 {cartItemsCount > 0 && (
                   <span className="absolute -top-2 -right-2 bg-amber-500 text-black font-semibold px-1.5 py-[2px] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                     {cartItemsCount}
@@ -503,7 +520,7 @@ export default function Header() {
                 aria-label="Abrir carrito"
                 title="Carrito"
               >
-                <ShoppingCart className="w-5 h-5 stroke-[1.5] text-gray-300 hover:text-amber-300 transition-colors duration-300" />
+                <ShoppingCart className="w-5 h-5 stroke-[1.5] text-black hover:text-amber-300 transition-colors duration-300" />
                 {cartItemsCount > 0 && (
                   <span className="absolute -top-2 -right-2 bg-amber-500 text-black font-semibold px-1.5 py-[2px] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                     {cartItemsCount}
@@ -515,22 +532,23 @@ export default function Header() {
 
           <div className="md:hidden px-5 pb-4">
             <div className="relative" ref={searchBoxRef}>
-              <div className="relative border border-white/35 bg-[#111113] -mx-9 px-4 py-2 rounded-md">
+              <div className="relative border border-gray-300 bg-gray-200 -mx-9 px-4 py-2 rounded-md">
                 <input
                   type="text"
                   value={mobileSearchTerm}
                   onChange={(e) => handleSearchChange(e.target.value)}
                   placeholder="Buscar"
                   autoFocus
-                  className="w-full !bg-transparent !text-white border-0 pr-16 text-[15px] placeholder:text-gray-500 focus:outline-none focus:ring-0 shadow-none"
+                  autoComplete="off"
+                  className="w-full pl-2 border-0 pr-16 text-[15px] text-black placeholder:text-gray-400 focus:outline-none focus:ring-0 shadow-none appearance-none"
                   style={{
-                    backgroundImage: "linear-gradient(#111113, #111113)",
-                    backgroundRepeat: "no-repeat",
-                    backgroundSize: "100% 100%",
-                    WebkitTextFillColor: "#fff",
+                    background: "#e4e8edff",
+                    WebkitAppearance: "none",
+                    appearance: "none",
+                    color: "#000",
+                    caretColor: "#000",
                   }}
                 />
-
                 {mobileSearchTerm ? (
                   <button
                     type="button"
@@ -547,7 +565,7 @@ export default function Header() {
                 ) : (
                   <div
                     aria-hidden="true"
-                    className="pointer-events-none absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center text-white"
+                    className="pointer-events-none absolute right-4 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center text-gray-500"
                   >
                     <Search className="h-6 w-6 stroke-[1.5]" />
                   </div>
@@ -709,7 +727,7 @@ export default function Header() {
 
                 <Link
                   to={withWholesale("/inicio")}
-                  className="block text-gray-200 hover:text-amber-300 transition-all duration-300 text-lg"
+                  className="block text-black hover:text-amber-300 transition-all duration-300 text-lg"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Inicio

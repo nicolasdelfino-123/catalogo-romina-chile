@@ -33,7 +33,7 @@ export const storeConfig = {
 
     media: {
         heroImage: "f2.jpeg",
-        footerLogo: "logo_attar_2_si.jpeg",
+        footerLogo: "logo_danna.jpeg",
     },
 
     map: {
