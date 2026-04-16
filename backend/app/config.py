@@ -6,14 +6,14 @@ load_dotenv()
 
 class Config:
     # --- Core / Seguridad ---
-    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "fallback-secret-key")
+    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
     # Expiración global de tokens JWT (fijo: 7 días)
     from datetime import timedelta
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=7)
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # --- Base de datos ---
-    SQLALCHEMY_DATABASE_URI = os.getenv("SQLALCHEMY_DATABASE_URI", "sqlite:///default.db")
+    SQLALCHEMY_DATABASE_URI = os.getenv("SQLALCHEMY_DATABASE_URI")
 
     # --- Email (siempre desde .env) ---
     MAIL_SERVER = os.getenv("MAIL_SERVER", "smtp.gmail.com")

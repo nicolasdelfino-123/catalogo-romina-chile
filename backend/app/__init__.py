@@ -26,10 +26,10 @@ def create_app():
     enviroment = os.getenv("FLASK_ENV", "production")
 
     if enviroment == "production":
-        static_folder = "/var/www/catalogo/catalogo-attar/frontend/dist"
+        base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+        static_folder = os.path.join(base_path, "frontend", "dist")
     else:
         static_folder = "frontend/dist"
-
     app = Flask(__name__, static_folder=static_folder, static_url_path="/")
 
     # Configuración básica según entorno
@@ -83,7 +83,12 @@ def create_app():
     app.register_blueprint(mercadopago_bp, url_prefix='/api/mercadopago')
     app.register_blueprint(password_bp)
     app.register_blueprint(persistent_login_bp)
-    
+
+    # SPA fallback (para evitar 404 al refrescar)
+    @app.errorhandler(404)
+    def not_found(e):
+        return app.send_static_file("index.html")
+
 
     # ⚠️ No hay api.py adicional; /me/address no existe. Usar /user/address en el front.
     return app
