@@ -363,13 +363,13 @@ const normalizeVolumeOptions = (rows = [], { keepWithoutMl = false } = {}) =>
     (rows || [])
         .map((row) => {
             const ml = Number(row?.ml);
-            const price = Number(row?.price);
+            const price = parseFlexibleDecimal(row?.price);
             const stockRaw = Number(row?.stock);
             const priceWholesaleRaw = row?.price_wholesale;
             const priceWholesale =
                 priceWholesaleRaw === "" || priceWholesaleRaw === null || priceWholesaleRaw === undefined
                     ? null
-                    : Number(priceWholesaleRaw);
+                    : parseFlexibleDecimal(priceWholesaleRaw);
 
             return {
                 ml: Number.isFinite(ml) ? Math.max(0, Math.floor(ml)) : null,
@@ -488,7 +488,11 @@ export default function AdminProducts() {
     const startEditPrice = (p, currentPrice) => {
         setEditingPriceId(p.id);
         // mantengo como string lo que ve el usuario
-        setEditingPrice(String(currentPrice ?? p.price ?? ""));
+        setEditingPrice(
+            currentPrice == null || currentPrice === ""
+                ? ""
+                : formatEditableMoney(currentPrice ?? p.price)
+        );
     };
     const startEditWholesale = (product, currentWholesale) => {
         setEditingWholesaleId(product.id);
@@ -508,7 +512,7 @@ export default function AdminProducts() {
 
     const confirmEditPrice = async () => {
         if (!editingPriceId) return;
-        const newPriceNum = Number(editingPrice);
+        const newPriceNum = parseFlexibleDecimal(editingPrice);
         if (!Number.isFinite(newPriceNum) || newPriceNum < 0) {
             alert("Precio inválido");
             return;
@@ -888,7 +892,7 @@ export default function AdminProducts() {
             const finalStock = allVolumeOptions.length > 0
                 ? stockFromVolumes
                 : Number(form.stock ?? 0);
-            const directRetail = Number(form.price);
+            const directRetail = parseFlexibleDecimal(form.price);
             const directWholesale = parseFlexibleDecimal(form.price_wholesale);
             const payload = {
                 ...cleanForm,
@@ -1520,11 +1524,11 @@ export default function AdminProducts() {
                                                     <input
                                                         className="w-20 md:w-24 border rounded px-2 py-1 text-right tabular-nums"
                                                         type="text"
-                                                        inputMode="numeric"
+                                                        inputMode="decimal"
                                                         autoFocus
-                                                        value={Number(editingPrice || 0).toLocaleString("es-AR")}
+                                                        value={editingPrice ?? ""}
                                                         onChange={(e) => {
-                                                            const raw = e.target.value.replace(/\./g, "").replace(/[^\d]/g, "");
+                                                            const raw = e.target.value.replace(/[^\d,.\s]/g, "");
                                                             setEditingPrice(raw);
                                                         }}
                                                         onKeyDown={(e) => {
@@ -2100,7 +2104,7 @@ export default function AdminProducts() {
                                 className="h-10 px-3 rounded bg-green-600 text-white hover:bg-green-700 transition-colors"
                                 onClick={() => {
                                     const ml = Number(form.volume_ml);
-                                    const price = Number(form.price);
+                                    const price = parseFlexibleDecimal(form.price);
                                     const priceWholesale = parseFlexibleDecimal(form.price_wholesale);
                                     const stock = Math.max(0, Math.floor(Number(form.volume_stock) || 0));
                                     const row = {
@@ -2146,17 +2150,13 @@ export default function AdminProducts() {
                                         className="w-full border rounded pl-7 pr-3 py-2"
                                         placeholder="Precio minorista"
                                         type="text"
-                                        inputMode="numeric"
+                                        inputMode="decimal"
                                         {...noSpin}
-                                        value={
-                                            form.price
-                                                ? Number(form.price).toLocaleString("es-AR")
-                                                : ""
-                                        }
+                                        value={form.price ?? ""}
                                         onChange={(e) =>
                                             setForm({
                                                 ...form,
-                                                price: e.target.value.replace(/\D/g, "")
+                                                price: e.target.value.replace(/[^\d,.\s]/g, "")
                                             })
                                         }
                                     />
