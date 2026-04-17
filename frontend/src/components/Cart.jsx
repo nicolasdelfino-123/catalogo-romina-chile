@@ -140,7 +140,7 @@ export default function Cart({ isOpen: controlledOpen, onClose: controlledOnClos
     }
 
     // 🚚 info de envío (PRO y simple)
-    message += "🚚 Envío: a coordinar con el vendedor\n\n";
+    /*     message += "🚚 Envío: a coordinar con el vendedor\n\n"; */
 
     message += "_Los precios y la disponibilidad serán confirmados por el vendedor al responder el pedido._\n\n";
 
