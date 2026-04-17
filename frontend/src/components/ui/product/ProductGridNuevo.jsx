@@ -206,10 +206,10 @@ export default function ProductGridNuevo({ category, hideFilters = false }) {
                 window.innerWidth < 768
                     ? defaultItemsPerPage
                     : saved.itemsPerPage == null
-                    ? defaultItemsPerPage
-                    : (window.innerWidth >= 768 && saved.itemsPerPage === 12
-                        ? 24
-                        : saved.itemsPerPage);
+                        ? defaultItemsPerPage
+                        : (window.innerWidth >= 768 && saved.itemsPerPage === 12
+                            ? 24
+                            : saved.itemsPerPage);
 
             setItemsPerPage(restoredItemsPerPage);
             setCardsPerRow(saved.cardsPerRow ?? 4);
@@ -668,7 +668,7 @@ export default function ProductGridNuevo({ category, hideFilters = false }) {
                                                     key={num}
                                                     onClick={() => setItemsPerPage(num)}
                                                     className={`px-2 py-1 text-sm font-serif rounded transition-colors ${itemsPerPage === num
-                                                        ? "bg-[#232325] text-white"
+                                                        ? "bg-[#71C7C0] text-black hover:bg-[#1da398]"
                                                         : "bg-stone-100 text-stone-700 hover:bg-stone-200"
                                                         }`}
                                                 >
@@ -688,7 +688,7 @@ export default function ProductGridNuevo({ category, hideFilters = false }) {
                                                     key={num}
                                                     onClick={() => setCardsPerRow(num)}
                                                     className={`inline-flex items-center justify-center rounded border px-2 py-1.5 transition-colors ${cardsPerRow === num
-                                                        ? "border-stone-500 bg-stone-100"
+                                                        ? "border-[#71C7C0] bg-[#71C7C0] text-black hover:bg-[#1da398] "
                                                         : "border-stone-200 bg-white hover:border-stone-400"
                                                         }`}
                                                     aria-label={`Ver ${num} productos por fila`}
