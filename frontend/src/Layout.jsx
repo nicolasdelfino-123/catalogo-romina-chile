@@ -92,6 +92,16 @@ const ModeWatcher = () => {
   return null;
 };
 
+const ConditionalFloatingButtons = () => {
+  const location = useLocation();
+
+  if (location.pathname.startsWith("/admin")) {
+    return null;
+  }
+
+  return <FloatingButtons />;
+};
+
 
 
 
@@ -140,7 +150,7 @@ const Layout = () => {
         {/* 🔥 Detecta si estamos en /mayorista */}
         <ModeWatcher />
 
-        <FloatingButtons />
+        <ConditionalFloatingButtons />
         <Header />
 
         <Routes>
