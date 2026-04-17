@@ -247,10 +247,10 @@ tracking-wide
 text-sm
 uppercase
 rounded-lg
-text-white
-bg-[#0B0608] border border-[#C9A227] text-[#C9A227] hover:bg-[#C9A227] hover:text-black
+border border-[#C9A227] text-[#C9A227] hover:text-black
 bg-[length:200%_100%]
 bg-left
+bg-[#71C7C0] text-black hover:bg-[#1da398]
 hover:bg-right
 transition-all duration-500
 shadow-lg shadow-amber-500/20

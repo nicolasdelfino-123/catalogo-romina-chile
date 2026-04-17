@@ -435,7 +435,7 @@ export default function ProductDetailNuevo() {
                                                 type="button"
                                                 onClick={() => setSelectedSizeMl(String(opt.ml))}
                                                 className={`px-3 py-1 rounded-full text-xs border transition ${active
-                                                    ? "bg-black text-white border-black"
+                                                    ? "bg-[#71C7C0] text-black hover:bg-[#1da398]"
                                                     : "border-stone-300 text-stone-600 hover:border-black"
                                                     }`}
                                             >

@@ -299,7 +299,7 @@ export default function ProductCardPerfumes({ product, returnTo, isGrid = true }
                                             type="button"
                                             onClick={() => setSelectedSizeMl(String(opt.ml))}
                                             className={`px-2 py-[3px] sm:px-3 sm:py-1 text-[10px] sm:text-xs rounded-full border transition ${active
-                                                ? "bg-black text-white border-black"
+                                                ? "bg-[#71C7C0] text-black hover:bg-[#1da398]"
                                                 : "border-stone-300 text-stone-600 hover:border-black"
                                                 }`}
                                         >

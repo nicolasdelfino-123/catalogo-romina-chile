@@ -242,7 +242,7 @@ export default function SidebarFiltersNuevo({
                             onChangePrice?.(draftPrice ?? { min: priceMin, max: priceMax });
                             setDraftPrice(null);
                         }}
-                        className="flex-1 py-2 rounded-lg bg-[#232325] text-white text-sm font-serif hover:bg-black transition-colors"
+                        className="flex-1 py-2 rounded-lg bg-[#71C7C0] text-black hover:bg-[#1da398] text-sm font-serif transition-colors"
                     >
                         Aplicar
                     </button>

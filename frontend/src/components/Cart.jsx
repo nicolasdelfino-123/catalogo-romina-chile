@@ -481,7 +481,7 @@ Pago: ${customerData.payment}
           <button
             onClick={() => setShowCheckout(true)}
 
-            className="w-full bg-[#232325] text-white py-3 rounded-lg font-serif tracking-wide hover:bg-black transition-colors"
+            className="w-full bg-[#71C7C0] text-black hover:bg-[#1da398] text-black py-3 rounded-lg font-serif tracking-wide transition-colors"
           >
             📦 Solicitar Pedido por WhatsApp
           </button>
@@ -576,7 +576,7 @@ Pago: ${customerData.payment}
               <p className="text-sm font-serif tracking-wide mb-3 text-gray-800">Forma de pago</p>
 
               <div className="space-y-2 text-sm">
-                {["Retiro en Stand del Mall", "Reparto a domicilio (días martes)", "Coordinar"].map(method => {
+                {["Retiro en Stand del Mall", "Reparto a domicilio ($3.000)", "Envío"].map(method => {
                   const selected = customerData.payment === method;
 
                   return (
@@ -584,7 +584,7 @@ Pago: ${customerData.payment}
                       key={method}
                       className={`flex items-center gap-3 cursor-pointer border rounded-md px-3 py-2 transition
      ${selected
-                          ? "bg-[#232325] text-white border-black shadow-sm"
+                          ? "bg-[#71C7C0] text-black hover:bg-[#1da398] border-black shadow-sm"
                           : "bg-white hover:bg-gray-50 border-gray-300"}
       `}
                     >
@@ -602,11 +602,11 @@ Pago: ${customerData.payment}
 
               </div>
             </div>
-            <p className="text-sm text-gray-500 font-serif tracking-wide mt-3 mb-5 text-center">
+            {/*  <p className="text-sm text-gray-500 font-serif tracking-wide mt-3 mb-5 text-center">
               📦 Envío disponible <br />
               <span className="italic">El costo se coordina con el vendedor.</span>
             </p>
-
+ */}
 
             <div className="flex justify-end gap-2">
               <button
@@ -618,7 +618,7 @@ Pago: ${customerData.payment}
 
               <button
                 onClick={sendOrder}
-                className="px-4 py-2 bg-[#232325] text-white rounded-lg font-serif tracking-wide hover:bg-black transition-colors"
+                className="px-4 py-2 bg-[#71C7C0] text-black hover:bg-[#1da398] rounded-lg font-serif tracking-wide transition-colors"
               >
                 Enviar pedido
               </button>
