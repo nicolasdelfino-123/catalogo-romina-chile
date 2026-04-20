@@ -13,7 +13,7 @@ from PIL import Image, ImageOps # pip install pillow
 from flask import url_for
 # backend/app/routes/admin_bp.py
 from flask import Blueprint, request, jsonify, current_app, url_for
-import os, io, hashlib, uuid
+import os, io, hashlib, uuid, json
 from app.models import Order, OrderItem  # asegurate que esté arriba también
 from flask import redirect
 
@@ -21,6 +21,7 @@ from flask import redirect
 
 
 admin_bp = Blueprint('admin', __name__)
+MAX_HOME_FEATURED_PRODUCTS = 12
 
 # Catálogo de categorías esperado por el frontend actual.
 # Mantener IDs estables evita romper FK y filtros ya existentes.
@@ -135,6 +136,73 @@ def admin_required():
     current_user_id = get_jwt_identity()
     user = User.query.get(current_user_id)
     return user and user.is_admin
+
+
+def _featured_products_file_path():
+    os.makedirs(current_app.instance_path, exist_ok=True)
+    return os.path.join(current_app.instance_path, "home_featured_products.json")
+
+
+def _read_featured_product_ids():
+    path = _featured_products_file_path()
+    if not os.path.exists(path):
+        return []
+
+    try:
+        with open(path, "r", encoding="utf-8") as fh:
+            data = json.load(fh)
+    except Exception:
+        return []
+
+    raw_ids = data.get("product_ids", []) if isinstance(data, dict) else data
+    featured_ids = []
+    seen = set()
+    for raw_id in raw_ids or []:
+        try:
+            product_id = int(raw_id)
+        except Exception:
+            continue
+        if product_id in seen:
+            continue
+        seen.add(product_id)
+        featured_ids.append(product_id)
+    return featured_ids[:MAX_HOME_FEATURED_PRODUCTS]
+
+
+def _write_featured_product_ids(product_ids):
+    path = _featured_products_file_path()
+    sanitized_ids = []
+    seen = set()
+    for raw_id in product_ids or []:
+        try:
+            product_id = int(raw_id)
+        except Exception:
+            continue
+        if product_id in seen:
+            continue
+        seen.add(product_id)
+        sanitized_ids.append(product_id)
+
+    with open(path, "w", encoding="utf-8") as fh:
+        json.dump({"product_ids": sanitized_ids[:MAX_HOME_FEATURED_PRODUCTS]}, fh, ensure_ascii=True, indent=2)
+
+
+def _get_valid_featured_product_ids(include_inactive=True, persist_pruned=False):
+    featured_ids = _read_featured_product_ids()
+    if not featured_ids:
+        return []
+
+    query = Product.query.filter(Product.id.in_(featured_ids))
+    if not include_inactive:
+        query = query.filter(Product.is_active == True)
+
+    existing_ids = {product.id for product in query.all()}
+    valid_ids = [product_id for product_id in featured_ids if product_id in existing_ids]
+
+    if persist_pruned and valid_ids != featured_ids:
+        _write_featured_product_ids(valid_ids)
+
+    return valid_ids
 
 # =======================
 #       PRODUCTOS
@@ -346,6 +414,9 @@ def delete_product(product_id):
             product.is_active = False  # comportamiento anterior (soft delete)
 
         db.session.commit()
+        if hard:
+            featured_ids = [pid for pid in _read_featured_product_ids() if pid != product_id]
+            _write_featured_product_ids(featured_ids)
         return jsonify({'message': 'Producto eliminado'}), 200
     except Exception as e:
         db.session.rollback()
@@ -366,6 +437,69 @@ def get_all_products_admin():
         
     except Exception as e:
         return jsonify({'error': f'Error al obtener productos: {str(e)}'}), 500
+
+
+@admin_bp.route('/featured-products', methods=['GET'])
+@jwt_required()
+def get_featured_products_admin():
+    if not admin_required():
+        return jsonify({'error': 'Acceso denegado. Se requieren permisos de administrador.'}), 403
+
+    try:
+        product_ids = _get_valid_featured_product_ids(include_inactive=True, persist_pruned=True)
+        return jsonify({
+            'product_ids': product_ids,
+            'max_items': MAX_HOME_FEATURED_PRODUCTS,
+            'is_configured': os.path.exists(_featured_products_file_path()),
+        }), 200
+    except Exception as e:
+        return jsonify({'error': f'Error al obtener productos destacados: {str(e)}'}), 500
+
+
+@admin_bp.route('/featured-products', methods=['PUT'])
+@jwt_required()
+def update_featured_products_admin():
+    if not admin_required():
+        return jsonify({'error': 'Acceso denegado. Se requieren permisos de administrador.'}), 403
+
+    try:
+        data = request.get_json() or {}
+        requested_ids = data.get('product_ids', [])
+        if not isinstance(requested_ids, list):
+            return jsonify({'error': 'product_ids debe ser una lista'}), 400
+
+        sanitized_ids = []
+        seen = set()
+        for raw_id in requested_ids:
+            try:
+                product_id = int(raw_id)
+            except Exception:
+                continue
+            if product_id in seen:
+                continue
+            seen.add(product_id)
+            sanitized_ids.append(product_id)
+
+        if len(sanitized_ids) > MAX_HOME_FEATURED_PRODUCTS:
+            return jsonify({'error': f'Solo podés seleccionar hasta {MAX_HOME_FEATURED_PRODUCTS} productos.'}), 400
+
+        existing_ids = {
+            product.id for product in Product.query.filter(Product.id.in_(sanitized_ids)).all()
+        } if sanitized_ids else set()
+
+        missing_ids = [product_id for product_id in sanitized_ids if product_id not in existing_ids]
+        if missing_ids:
+            return jsonify({'error': 'Hay productos seleccionados que no existen.', 'missing_ids': missing_ids}), 400
+
+        _write_featured_product_ids(sanitized_ids)
+        return jsonify({
+            'message': 'Productos destacados actualizados',
+            'product_ids': sanitized_ids,
+            'max_items': MAX_HOME_FEATURED_PRODUCTS,
+            'is_configured': True,
+        }), 200
+    except Exception as e:
+        return jsonify({'error': f'Error al guardar productos destacados: {str(e)}'}), 500
 
 
 # =======================

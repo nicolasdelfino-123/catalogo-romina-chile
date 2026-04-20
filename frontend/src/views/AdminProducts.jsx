@@ -305,6 +305,7 @@ function FlavorPills({ catalog = [], onChange }) {
 
 // arriba, junto a otros useRef/useState:
 const API = import.meta.env.VITE_BACKEND_URL?.replace(/\/+$/, "") || "";
+const MAX_HOME_FEATURED_PRODUCTS = 12;
 
 // Normaliza paths viejos
 const normalizeImagePath = (u = "") => {
@@ -410,6 +411,7 @@ const clearPricingInputs = (state) => ({
 // ----- Componente principal -----
 export default function AdminProducts() {
     const [products, setProducts] = useState([])
+    const [featuredProductIds, setFeaturedProductIds] = useState([])
     const categories = PERFUME_CATEGORY_NAMES
     const [form, setForm] = useState(null)
     const [q, setQ] = useState("")
@@ -436,6 +438,7 @@ export default function AdminProducts() {
     const [expandedMobileProductId, setExpandedMobileProductId] = useState(null);
     const [changingStatusId, setChangingStatusId] = useState(null);
     const [changingStatusMsg, setChangingStatusMsg] = useState("");
+    const [savingFeaturedId, setSavingFeaturedId] = useState(null);
     const [uploadingImage, setUploadingImage] = useState(false);
     const [uploadingImageLabel, setUploadingImageLabel] = useState("");
     const [savingProduct, setSavingProduct] = useState(false);
@@ -481,9 +484,68 @@ export default function AdminProducts() {
         }
     }
 
+    const fetchFeaturedSelection = async () => {
+        try {
+            const res = await fetch(`${API}/admin/featured-products`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (!res.ok) return;
+            const data = await res.json();
+            setFeaturedProductIds(Array.isArray(data?.product_ids) ? data.product_ids : []);
+        } catch (error) {
+            console.error("Error fetching featured selection:", error);
+        }
+    };
+
     useEffect(() => {
         fetchAll()
+        fetchFeaturedSelection()
     }, [])
+
+    const persistFeaturedSelection = async (nextIds) => {
+        const res = await fetch(`${API}/admin/featured-products`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ product_ids: nextIds }),
+        });
+
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+            throw new Error(data?.error || "No se pudo guardar la selección destacada");
+        }
+
+        return Array.isArray(data?.product_ids) ? data.product_ids : nextIds;
+    };
+
+    const toggleFeaturedProduct = async (productId, checked) => {
+        const isSelected = featuredProductIds.includes(productId);
+        if (checked === isSelected) return;
+
+        if (checked && featuredProductIds.length >= MAX_HOME_FEATURED_PRODUCTS) {
+            alert(`Solo podés seleccionar hasta ${MAX_HOME_FEATURED_PRODUCTS} productos para Inicio.`);
+            return;
+        }
+
+        const nextIds = checked
+            ? [...featuredProductIds, productId]
+            : featuredProductIds.filter((id) => id !== productId);
+
+        setSavingFeaturedId(productId);
+        try {
+            setFeaturedProductIds(nextIds);
+            const savedIds = await persistFeaturedSelection(nextIds);
+            setFeaturedProductIds(savedIds);
+        } catch (error) {
+            console.error(error);
+            setFeaturedProductIds(featuredProductIds);
+            alert(error.message || "No se pudo actualizar la selección destacada");
+        } finally {
+            setSavingFeaturedId(null);
+        }
+    };
 
     const startEditPrice = (p, currentPrice) => {
         setEditingPriceId(p.id);
@@ -1416,6 +1478,14 @@ export default function AdminProducts() {
             )}
 
             {/* Tabla */}
+            <div className="mb-3 flex items-center justify-between gap-3 text-sm">
+                <div className="text-gray-700">
+                    Productos en Inicio: <span className="font-semibold">{featuredProductIds.length}</span> / {MAX_HOME_FEATURED_PRODUCTS}
+                </div>
+                <div className="text-xs text-gray-500">
+                    Tildá hasta {MAX_HOME_FEATURED_PRODUCTS} productos para mostrarlos en Inicio.
+                </div>
+            </div>
             <div ref={resultsRef} className="overflow-x-auto">
                 <table className="w-full text-sm border">
                     <thead className="bg-gray-50">
@@ -1442,6 +1512,7 @@ export default function AdminProducts() {
 
                             <th className="hidden p-2 md:table-cell">Stock</th>
                             <th className="hidden p-2 md:table-cell">Categoría</th>
+                            <th className="p-2 text-center">Inicio</th>
                             {/*  <th className="p-2">Sabores</th> */}
                             <th className="hidden p-2 md:table-cell">Estado</th>
                             <th className="p-2"></th>
@@ -1456,12 +1527,14 @@ export default function AdminProducts() {
                                 Number.isFinite(Number(selectedOption?.price_wholesale)) && Number(selectedOption.price_wholesale) > 0
                                     ? Number(selectedOption.price_wholesale)
                                     : null;
+                            const isFeaturedSelected = featuredProductIds.includes(p.id);
+                            const featuredLimitReached = featuredProductIds.length >= MAX_HOME_FEATURED_PRODUCTS;
                             const stockShown =
                                 Number.isFinite(Number(selectedOption?.stock))
                                     ? Number(selectedOption.stock)
                                     : (Number.isFinite(Number(p?.stock)) ? Number(p.stock) : 0);
                             const isMobileExpanded = expandedMobileProductId === p.id;
-                            const tableColSpan = budgetMode ? 13 : 11;
+                            const tableColSpan = budgetMode ? 14 : 12;
 
                             return (
                                 <Fragment key={p.id}>
@@ -1658,6 +1731,23 @@ export default function AdminProducts() {
                                             )}
                                         </td>
                                         <td className="hidden p-2 text-center md:table-cell">{ID_TO_CATEGORY_NAME[p.category_id]}</td>
+                                        <td className="p-2 text-center">
+                                            <input
+                                                type="checkbox"
+                                                checked={isFeaturedSelected}
+                                                disabled={Boolean(savingFeaturedId) || (!isFeaturedSelected && featuredLimitReached)}
+                                                onChange={(e) => toggleFeaturedProduct(p.id, e.target.checked)}
+                                                aria-label={isFeaturedSelected ? "Quitar de Inicio" : "Agregar a Inicio"}
+                                                title={
+                                                    isFeaturedSelected
+                                                        ? "Quitar de Inicio"
+                                                        : featuredLimitReached
+                                                            ? `Ya hay ${MAX_HOME_FEATURED_PRODUCTS} seleccionados`
+                                                            : "Mostrar en Inicio"
+                                                }
+                                                className="h-4 w-4 cursor-pointer accent-blue-600 disabled:cursor-not-allowed"
+                                            />
+                                        </td>
                                         <td className="hidden p-2 text-center md:table-cell">
                                             {/* Toggle visual Estado con aviso solo en filtro activos/inactivos */}
                                             <button
@@ -1860,6 +1950,19 @@ export default function AdminProducts() {
                                                     <div>
                                                         <div className="text-xs uppercase tracking-wide text-gray-500">Categoria</div>
                                                         <div className="mt-1">{ID_TO_CATEGORY_NAME[p.category_id]}</div>
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-xs uppercase tracking-wide text-gray-500">Inicio</div>
+                                                        <div className="mt-1">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={isFeaturedSelected}
+                                                                disabled={Boolean(savingFeaturedId) || (!isFeaturedSelected && featuredLimitReached)}
+                                                                onChange={(e) => toggleFeaturedProduct(p.id, e.target.checked)}
+                                                                aria-label={isFeaturedSelected ? "Quitar de Inicio" : "Agregar a Inicio"}
+                                                                className="h-4 w-4 cursor-pointer accent-blue-600 disabled:cursor-not-allowed"
+                                                            />
+                                                        </div>
                                                     </div>
                                                     <div>
                                                         <div className="text-xs uppercase tracking-wide text-gray-500">Desc. corta</div>

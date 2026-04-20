@@ -1,5 +1,5 @@
-import React, { useContext, useEffect, useLayoutEffect } from "react";
-import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import React, { useContext, useEffect, useLayoutEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Context } from "../js/store/appContext.jsx";
 import ProductCardPerfumes from "../components/ui/cards/ProductCardPerfumes.jsx";
 import HomeContact from "../components/home/HomeContact.jsx";
@@ -21,16 +21,49 @@ import maison from '../assets/maison.jpg'
 import rasasi from '../assets/rasasi.png'
 import ray from '../assets/raysi.jpg'
 
+const API = import.meta.env.VITE_BACKEND_URL?.replace(/\/+$/, "") || "";
+const MAX_HOME_FEATURED_PRODUCTS = 12;
+
 export default function InicioNuevo() {
     const { store, actions } = useContext(Context);
     const location = useLocation();
     const navigate = useNavigate();
     const banner = `/${storeConfig.media.heroImage}`;
+    const [featuredProductIds, setFeaturedProductIds] = useState([]);
+    const [featuredSelectionConfigured, setFeaturedSelectionConfigured] = useState(false);
 
     useEffect(() => {
         if (actions?.fetchProducts) {
             actions.fetchProducts();
         }
+    }, []);
+
+    useEffect(() => {
+        let cancelled = false;
+
+        const fetchFeaturedProducts = async () => {
+            try {
+                const response = await fetch(`${API}/public/featured-products`);
+                if (!response.ok) throw new Error("Error al obtener productos destacados");
+
+                const data = await response.json();
+                if (!cancelled) {
+                    setFeaturedProductIds(Array.isArray(data?.product_ids) ? data.product_ids : []);
+                    setFeaturedSelectionConfigured(Boolean(data?.is_configured));
+                }
+            } catch (error) {
+                console.error("Error fetching featured products:", error);
+                if (!cancelled) {
+                    setFeaturedProductIds([]);
+                    setFeaturedSelectionConfigured(false);
+                }
+            }
+        };
+
+        fetchFeaturedProducts();
+        return () => {
+            cancelled = true;
+        };
     }, []);
 
     const ADDRESS = storeConfig.business.address;
@@ -61,11 +94,16 @@ export default function InicioNuevo() {
         .sort((a, b) => getProductPrice(a) - getProductPrice(b))
         .slice(0, 6);
     const selectedFeaturedIds = new Set([...womenFeatured, ...menFeatured].map((p) => p.id));
-    const featuredProducts = [
+    const fallbackFeaturedProducts = [
         ...womenFeatured,
         ...menFeatured,
-        ...allProducts.filter((p) => !selectedFeaturedIds.has(p.id)).slice(0, Math.max(0, 12 - (womenFeatured.length + menFeatured.length))),
-    ].slice(0, 12);
+        ...allProducts.filter((p) => !selectedFeaturedIds.has(p.id)).slice(0, Math.max(0, MAX_HOME_FEATURED_PRODUCTS - (womenFeatured.length + menFeatured.length))),
+    ].slice(0, MAX_HOME_FEATURED_PRODUCTS);
+    const featuredProductsById = featuredProductIds
+        .map((productId) => allProducts.find((product) => product.id === productId))
+        .filter(Boolean)
+        .slice(0, MAX_HOME_FEATURED_PRODUCTS);
+    const featuredProducts = featuredSelectionConfigured ? featuredProductsById : fallbackFeaturedProducts;
 
 
     useLayoutEffect(() => {

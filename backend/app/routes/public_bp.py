@@ -18,6 +18,38 @@ from flask import Blueprint, request, jsonify
 
 
 public_bp = Blueprint('public', __name__)
+MAX_HOME_FEATURED_PRODUCTS = 12
+
+
+def _featured_products_file_path():
+    os.makedirs(current_app.instance_path, exist_ok=True)
+    return os.path.join(current_app.instance_path, "home_featured_products.json")
+
+
+def _read_featured_product_ids():
+    path = _featured_products_file_path()
+    if not os.path.exists(path):
+        return []
+
+    try:
+        with open(path, "r", encoding="utf-8") as fh:
+            data = json.load(fh)
+    except Exception:
+        return []
+
+    raw_ids = data.get("product_ids", []) if isinstance(data, dict) else data
+    featured_ids = []
+    seen = set()
+    for raw_id in raw_ids or []:
+        try:
+            product_id = int(raw_id)
+        except Exception:
+            continue
+        if product_id in seen:
+            continue
+        seen.add(product_id)
+        featured_ids.append(product_id)
+    return featured_ids[:MAX_HOME_FEATURED_PRODUCTS]
 
 @public_bp.route('/')
 def home():
@@ -74,6 +106,36 @@ def get_product_by_id(product_id):
         
     except Exception as e:
         return jsonify({'error': 'Error al obtener producto: ' + str(e)}), 500
+
+
+@public_bp.route('/featured-products', methods=['GET'])
+def get_featured_products():
+    """Obtener los IDs de productos destacados para InicioNuevo"""
+    try:
+        config_exists = os.path.exists(_featured_products_file_path())
+        featured_ids = _read_featured_product_ids()
+        if not featured_ids:
+            return jsonify({
+                'product_ids': [],
+                'max_items': MAX_HOME_FEATURED_PRODUCTS,
+                'is_configured': config_exists,
+            }), 200
+
+        active_ids = {
+            product.id
+            for product in Product.query.filter(
+                Product.id.in_(featured_ids),
+                Product.is_active == True,
+            ).all()
+        }
+        valid_ids = [product_id for product_id in featured_ids if product_id in active_ids]
+        return jsonify({
+            'product_ids': valid_ids,
+            'max_items': MAX_HOME_FEATURED_PRODUCTS,
+            'is_configured': True,
+        }), 200
+    except Exception as e:
+        return jsonify({'error': 'Error al obtener productos destacados: ' + str(e)}), 500
 
 @public_bp.route('/categories', methods=['GET'])
 def get_categories():
