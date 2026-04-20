@@ -9,17 +9,17 @@ import { storeConfig } from "../config/storeConfig";
 import perfumeImg from "../assets/latta_si.webp";
 import { getNormalizedCategoryId } from "../utils/perfumeCategories.js";
 
-import afnan from '../assets/afnan.webp'
-import al from '../assets/al.webp'
-import alhara from '../assets/alhara.png'
-import armaf from '../assets/armaf.webp'
-import bharara from '../assets/bharara.webp'
-import french from '../assets/french.webp'
+import armani from '../assets/armani_si.png'
+import galtier from '../assets/galtier.jpg'
+import gucci from '../assets/gucci.png'
+import kayali from '../assets/kayali_si.png'
+import versace from '../assets/versace_si.jpg'
 
-import lattafa from '../assets/lattafa.png'
+
+/* import lattafa from '../assets/lattafa.png'
 import maison from '../assets/maison.jpg'
 import rasasi from '../assets/rasasi.png'
-import ray from '../assets/raysi.jpg'
+import ray from '../assets/raysi.jpg' */
 
 const API = import.meta.env.VITE_BACKEND_URL?.replace(/\/+$/, "") || "";
 const MAX_HOME_FEATURED_PRODUCTS = 12;
@@ -390,78 +390,78 @@ shadow-lg shadow-amber-500/20
   `}</style>
             </section>
             <section className="relative bg-white py-8 fade-in-section border-y border-gray-200">
-                {/*  <div className="relative z-10 overflow-hidden whitespace-nowrap mx-0 md:mx-[104px]">
+                <div className="relative z-10 overflow-hidden whitespace-nowrap mx-0 md:mx-[104px]">
                     <div className="brands-track will-change-transform">
-                 
+
                         <div className="brands-group">
                             <div className="brand-container">
-                                <img src={afnan} alt="Afnan" className="brand-img" />
+                                <img src={versace} alt="Afnan" className="brand-img" />
                             </div>
                             <div className="brand-container">
-                                <img src={al} alt="al" className="brand-img" />
+                                <img src={kayali} alt="al" className="brand-img" />
                             </div>
                             <div className="brand-container">
-                                <img src={alhara} alt="alhara" className="brand-img" />
+                                <img src={gucci} alt="alhara" className="brand-img" />
                             </div>
                             <div className="brand-container">
-                                <img src={armaf} alt="Armaf" className="brand-img" />
+                                <img src={galtier} alt="Armaf" className="brand-img" />
                             </div>
                             <div className="brand-container">
-                                <img src={bharara} alt="Bharara" className="brand-img" />
+                                <img src={armani} alt="Bharara" className="brand-img" />
                             </div>
                             <div className="brand-container">
-                                <img src={french} alt="French" className="brand-img" />
+                                <img src={versace} alt="Afnan" className="brand-img" />
                             </div>
                             <div className="brand-container">
-                                <img src={lattafa} alt="Lattafa" className="brand-img" />
+                                <img src={kayali} alt="al" className="brand-img" />
                             </div>
                             <div className="brand-container">
-                                <img src={maison} alt="Maison" className="brand-img" />
+                                <img src={gucci} alt="alhara" className="brand-img" />
                             </div>
                             <div className="brand-container">
-                                <img src={rasasi} alt="Rasasi" className="brand-img" />
+                                <img src={galtier} alt="Armaf" className="brand-img" />
                             </div>
                             <div className="brand-container">
-                                <img src={ray} alt="Ray" className="brand-img" />
+                                <img src={armani} alt="Bharara" className="brand-img" />
                             </div>
                         </div>
 
-                    
+
                         <div className="brands-group" aria-hidden="true">
                             <div className="brand-container">
-                                <img src={afnan} alt="Afnan" className="brand-img" />
+                                <img src={versace} alt="Afnan" className="brand-img" />
                             </div>
                             <div className="brand-container">
-                                <img src={al} alt="al" className="brand-img" />
+                                <img src={kayali} alt="al" className="brand-img" />
                             </div>
                             <div className="brand-container">
-                                <img src={alhara} alt="alhara" className="brand-img" />
+                                <img src={gucci} alt="alhara" className="brand-img" />
                             </div>
                             <div className="brand-container">
-                                <img src={armaf} alt="Armaf" className="brand-img" />
+                                <img src={galtier} alt="Armaf" className="brand-img" />
                             </div>
                             <div className="brand-container">
-                                <img src={bharara} alt="Bharara" className="brand-img" />
+                                <img src={armani} alt="Bharara" className="brand-img" />
                             </div>
                             <div className="brand-container">
-                                <img src={french} alt="French" className="brand-img" />
+                                <img src={versace} alt="Afnan" className="brand-img" />
                             </div>
                             <div className="brand-container">
-                                <img src={lattafa} alt="Lattafa" className="brand-img" />
+                                <img src={kayali} alt="al" className="brand-img" />
                             </div>
                             <div className="brand-container">
-                                <img src={maison} alt="Maison" className="brand-img" />
+                                <img src={gucci} alt="alhara" className="brand-img" />
                             </div>
                             <div className="brand-container">
-                                <img src={rasasi} alt="Rasasi" className="brand-img" />
+                                <img src={galtier} alt="Armaf" className="brand-img" />
                             </div>
                             <div className="brand-container">
-                                <img src={ray} alt="Ray" className="brand-img" />
+                                <img src={armani} alt="Bharara" className="brand-img" />
                             </div>
                         </div>
                     </div>
                 </div>
- */}
+
                 <style>{`
         .brands-track {
             display: inline-flex;
