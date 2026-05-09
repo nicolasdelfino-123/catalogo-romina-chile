@@ -239,13 +239,19 @@ from app.models import Order, OrderItem, now_cba_naive
 def create_order():
     try:
         data = request.get_json() or {}
+        shipping_address = data.get("shipping_address") or {}
+        customer_phone = (
+            data.get("customer_phone")
+            or data.get("phone")
+            or (shipping_address.get("phone") if isinstance(shipping_address, dict) else None)
+        )
 
         order = Order(
             total_amount=float(data.get("total_amount") or 0),
             payment_method=data.get("payment_method") or "coordinar",
             customer_first_name=data.get("customer_first_name"),
-            customer_phone=data.get("customer_phone"),
-            shipping_address=data.get("shipping_address") or {},
+            customer_phone=customer_phone,
+            shipping_address=shipping_address,
             status="pending"
         )
 
