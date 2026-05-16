@@ -707,10 +707,12 @@ Pago: ${customerData.payment}
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[210]">
           <div className="bg-white rounded-lg p-6 w-[90%] max-w-md shadow-xl">
             <h2 className="text-xl font-serif tracking-wide text-gray-900 mb-3 text-center">
-              ¿Pedido enviado?
+              {whatsappOrderPrompt.status === "failed"
+                ? "Error al registrar el pedido"
+                : "Pedido Registrado"}
             </h2>
             <p className="text-sm text-gray-500 font-serif tracking-wide mb-5 text-center">
-              Si WhatsApp no se abrió, podés intentarlo otra vez.
+              Si WhatsApp no se abrió, podés abrirlo de nuevo haciendo click en "Abrir WhatsApp".
             </p>
 
             {whatsappOrderPrompt.status === "saving" && (
@@ -726,12 +728,12 @@ Pago: ${customerData.payment}
             )}
 
             <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
-              <button
+              {/* <button
                 onClick={() => setWhatsappOrderPrompt(null)}
                 className="px-4 py-2 border border-gray-300 rounded-lg font-serif tracking-wide hover:bg-gray-100 transition-colors"
               >
                 Volver
-              </button>
+              </button> */}
 
               <button
                 onClick={() => openWhatsAppFallbackUrl(whatsappOrderPrompt.fallbackUrl)}
